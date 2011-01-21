@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2010 Daniel Lienert <lienert@punkt.de>, Michael Knoll <knoll@punkt.de>
+*  (c) 2010 Daniel Lienert , Michael Knoll 
 *  All rights reserved
 *
 *
@@ -26,8 +26,8 @@
 /**
  * Abstract filter class for filter models
  * 
- * @author Michael Knoll <knoll@punkt.de>
- * @author Daniel Lienert <lienert@punkt.de>
+ * @author Michael Knoll 
+ * @author Daniel Lienert 
  * @package Domain
  * @subpackage Model\Filter
  */
@@ -373,8 +373,6 @@ abstract class Tx_PtExtlist_Domain_Model_Filter_AbstractFilter
 		
 		$this->setActiveState();
 		$this->initFilter();
-		
-		$this->sessionPersistenceManager->persistToSession($this);
 		
 		$this->buildFilterQuery();
 		

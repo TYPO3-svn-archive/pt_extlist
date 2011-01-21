@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2010 Daniel Lienert <lienert@punkt.de>, Michael Knoll <knoll@punkt.de>
+*  (c) 2010 Daniel Lienert , Michael Knoll 
 *  All rights reserved
 *
 *
@@ -26,7 +26,7 @@
 /**
  * Class contains STATIC utility functions to determine plugin behaviour 
  * 
- * @author Daniel Lienert <lienert@punkt.de>
+ * @author Daniel Lienert 
  * @package Utility
  */
 class Tx_PtExtlist_Utility_Extension {
@@ -38,9 +38,9 @@ class Tx_PtExtlist_Utility_Extension {
 	 */
 	public static function getExtensionNameSpace() {
 		$frameWorkKonfiguration = Tx_Extbase_Dispatcher::getExtbaseFrameworkConfiguration();
-		return  strtolower('tx_' .$frameWorkKonfiguration['extensionName'].'_'.$frameWorkKonfiguration['pluginName']);
+		return strtolower('tx_' .$frameWorkKonfiguration['extensionName'].'_'.$frameWorkKonfiguration['pluginName']);
 	}
-	
+		
 	
 	/**
 	 * Determine if the extension operates in cached mode

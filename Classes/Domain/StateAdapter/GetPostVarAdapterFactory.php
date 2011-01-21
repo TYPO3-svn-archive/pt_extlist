@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2010 Daniel Lienert <lienert@punkt.de>, Michael Knoll <knoll@punkt.de>
+*  (c) 2010 Daniel Lienert , Michael Knoll 
 *  All rights reserved
 *
 *
@@ -57,8 +57,7 @@ class Tx_PtExtlist_Domain_StateAdapter_GetPostVarAdapterFactory {
 	
 		return self::$instance;
 	}
-	
-	
+		
 	
 	/**
 	 * Remove the extension name from the variables

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2010 Daniel Lienert <lienert@punkt.de>, Michael Knoll <knoll@punkt.de>
+*  (c) 2010 Daniel Lienert , Michael Knoll 
 *  All rights reserved
 *
 *
@@ -29,8 +29,8 @@
  *
  * @package Domain
  * @subpackage StateAdapter
- * @author Daniel Lienert <lienert@punkt.de>
- * @author Michael Knoll <knoll@punkt.de>
+ * @author Daniel Lienert 
+ * @author Michael Knoll 
  */
 class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_PtExtlist_Domain_Lifecycle_LifecycleEventInterface {
 	
@@ -58,6 +58,15 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_P
 	 * @var string
 	 */
 	protected $sessionHash = NULL;
+	
+	
+	
+	/**
+	 * Holds an array of objects that should be persisted when lifecycle ends
+	 *
+	 * @var array<Tx_PtExtlist_Domain_StateAdapter_SessionPersistableInterface>
+	 */
+	protected $objectsToPersist = array();
 	
 	
 	
@@ -95,7 +104,7 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_P
         	$this->sessionData = array();
         }
         
-        $this->sessionData = Tx_PtExtlist_Utility_NameSpaceArray::saveDataInNamespaceTree($sessionNamespace, $this->sessionData, $objectData);
+        $this->sessionData = Tx_PtExtlist_Utility_NameSpace::saveDataInNamespaceTree($sessionNamespace, $this->sessionData, $objectData);
 	}
 
 	
@@ -123,8 +132,9 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_P
 	public function getSessionDataForObjectNamespace($objectNamespace) {
 		tx_pttools_assert::isNotEmptyString($objectNamespace, array('message' => 'object namespace must not be empty! 1278436823'));
 
-		return Tx_PtExtlist_Utility_NameSpaceArray::getArrayContentByArrayAndNamespace($this->sessionData, $objectNamespace);
+		return Tx_PtExtlist_Utility_NameSpace::getArrayContentByArrayAndNamespace($this->sessionData, $objectNamespace);
 	}
+	
 	
 	
 	/**
@@ -132,6 +142,7 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_P
 	 * 
 	 */
 	public function persist() {
+		$this->persistObjectsToSession();
 		$this->sessionAdapter->store('pt_extlist.cached.session', $this->sessionData);
 	}
 	
@@ -172,7 +183,7 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_P
 	 * @return array
 	 */
 	public function getSessionDataByNamespace($objectNamespace) {
-		return Tx_PtExtlist_Utility_NameSpaceArray::getArrayContentByArrayAndNamespace($this->sessionData, $objectNamespace);
+		return Tx_PtExtlist_Utility_NameSpace::getArrayContentByArrayAndNamespace($this->sessionData, $objectNamespace);
 	}
 	
 	
@@ -200,7 +211,7 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_P
 		 * 
 		$bookmarkContentArray = unserialize($bookmark->getContent());
 		$namespace = 'tx_ptextlist_pi1.' . $bookmark->getListId() . '.filters';
-		$this->sessionData = Tx_PtExtlist_Utility_NameSpaceArray::saveDataInNamespaceTree($namespace, $this->sessionData, $bookmarkContentArray['filters']);
+		$this->sessionData = Tx_PtExtlist_Utility_NameSpace::saveDataInNamespaceTree($namespace, $this->sessionData, $bookmarkContentArray['filters']);
 		*/
 	}
 	
@@ -218,5 +229,44 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_P
 		}
 		return $this->sessionHash;
 	}
+	
+	
+	
+    /**
+     * Loads and registers an object on session manager
+     *
+     * @param Tx_PtExtlist_Domain_StateAdapter_SessionPersistableInterface $object
+     */
+    public function registerObjectAndLoadFromSession(Tx_PtExtlist_Domain_StateAdapter_SessionPersistableInterface $object) {
+    	$this->loadFromSession($object);
+    	$this->registerObjectForSessionPersistence($object);
+    }
+	
+    
+    
+    /**
+     * Registers an object to be persisted to session when lifecycle ends
+     *
+     * @param Tx_PtExtlist_Domain_StateAdapter_SessionPersistableInterface $object
+     */
+    public function registerObjectForSessionPersistence(Tx_PtExtlist_Domain_StateAdapter_SessionPersistableInterface $object) {
+        if (!in_array(spl_object_hash($object), $this->objectsToPersist)) {
+    		$this->objectsToPersist[spl_object_hash($object)] = $object;
+    	}
+    }
+    
+    
+	
+	/**
+     * Persists all objects registered for session persistence
+     * 
+     */
+    protected function persistObjectsToSession() {
+    	foreach ($this->objectsToPersist as $objectToPersist) { /* @var $objectToPersist Tx_PtExtlist_Domain_StateAdapter_SessionPersistableInterface */
+    		if (!is_null($objectToPersist)) { // object reference could be null in the meantime
+                $this->persistToSession($objectToPersist);
+    		}   
+       	}
+    }
 }
 ?>

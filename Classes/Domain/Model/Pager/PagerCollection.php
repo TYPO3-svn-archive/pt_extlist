@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2010 Daniel Lienert <lienert@punkt.de>, Michael Knoll <knoll@punkt.de>,
-*  Christoph Ehscheidt <ehscheidt@punkt.de>
+*  (c) 2010 Daniel Lienert , Michael Knoll ,
+*  Christoph Ehscheidt 
 *  All rights reserved
 *
 *
@@ -27,8 +27,8 @@
 /**
  * A collection to manage a bunch of pagers.
  * 
- * @author Daniel Lienert <lienert@punkt.de>
- * @author Christoph Ehscheidt <ehscheidt@punkt.de>
+ * @author Daniel Lienert 
+ * @author Christoph Ehscheidt 
  * @package Domain
  * @subpackage Model\Pager
  */
@@ -266,6 +266,7 @@ class Tx_PtExtlist_Domain_Model_Pager_PagerCollection extends tx_pttools_collect
 	 * @param int $rowIndex
 	 */
 	public function setPageByRowIndex($rowIndex) {
+		$rowIndex++; // rowindex = 0 means item 1
 		$pageIndex = ceil($rowIndex / $this->getItemsPerPage());
 		$this->setCurrentPage($pageIndex);
 	}
