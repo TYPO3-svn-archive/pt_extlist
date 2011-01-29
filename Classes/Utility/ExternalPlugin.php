@@ -29,15 +29,16 @@
 /**
  * Class contains utility functions to access extlist objects
  * form external dependent plugins
- *
+ * 
+ * DEPRECTED
+ * 
  * @author Daniel Lienert 
  * @package Utility
+ * @deprecated
  */
 class Tx_PtExtlist_Utility_ExternalPlugin {
 
 	
-	static $nameSpacePrefix; 
-
 	/**
 	 * Initialize and return a DataBackend with the given listIndentifier
 	 *
@@ -102,7 +103,7 @@ class Tx_PtExtlist_Utility_ExternalPlugin {
 	/**
 	 * Read the Session data into the cache
 	 */
-	protected function loadLifeCycleManager() {
+	protected static function loadLifeCycleManager() {
 		$lifecycleManager = Tx_PtExtlist_Domain_Lifecycle_LifecycleManagerFactory::getInstance();
 		$lifecycleManager->register(Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManagerFactory::getInstance());
 		// SET LIFECYCLE TO START -> read session data into cache

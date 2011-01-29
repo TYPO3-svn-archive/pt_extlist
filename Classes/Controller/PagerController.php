@@ -57,6 +57,7 @@ class Tx_PtExtlist_Controller_PagerController extends Tx_PtExtlist_Controller_Ab
 	 * @see Classes/Controller/Tx_PtExtlist_Controller_AbstractController::initializeAction()
 	 */
 	public function initializeAction() {
+		
 		$this->pagerCollection = $this->getPagerCollectionInstance();
 		$this->pagerIdentifier = (empty($this->settings['pagerIdentifier']) ? 'default' : $this->settings['pagerIdentifier']);
 	}
@@ -79,7 +80,7 @@ class Tx_PtExtlist_Controller_PagerController extends Tx_PtExtlist_Controller_Ab
 		#$this->setTemplatePathAndFilename('EXT:pt_extlist/Resources/Private/Templates/Pager/second.html');
 		$templatePath = $pager->getPagerConfiguration()->getTemplatePath();
 		if(!empty($templatePath)) {
-			$this->setTemplatePathAndFilename($templatePath);			
+			$this->view->setTemplatePathAndFilename($templatePath);			
 		}
 		
 		$this->view->assign('pagerCollection', $this->pagerCollection);

@@ -39,7 +39,7 @@ class Tx_PtExtlist_Domain_Configuration_ConfigurationBuilderFactory {
 	 * Each list identifier holds its own configuration builder object
 	 * @var array<Tx_PtExtlist_Domain_Configuration_ConfigurationBuilder>
 	 */
-	private static $instances = NULL;
+	private static $instances = array();
 	
 	
 	/**
@@ -55,8 +55,8 @@ class Tx_PtExtlist_Domain_Configuration_ConfigurationBuilderFactory {
 	 * Inject all settings of the extension 
 	 * @param $settings The current settings for this extension.
 	 */
-	public static function injectSettings(array $settings) {
-		self::$settings = $settings;
+	public static function injectSettings(array &$settings) {
+		self::$settings = &$settings;
 	}
 	
 	
@@ -68,7 +68,9 @@ class Tx_PtExtlist_Domain_Configuration_ConfigurationBuilderFactory {
 	public static function getInstance($listIdentifier = NULL) {
 		
 		if($listIdentifier == NULL) {
-			$listIdentifier = Tx_PtExtlist_Utility_Extension::getCurrentListIdentifier();
+			$listIdentifier = t3lib_div::makeInstance('Tx_Extbase_Object_ObjectManager')
+										->get('Tx_PtExtlist_Extbase_ExtbaseContext')
+										->getCurrentListIdentifier();
 		}
 
 		if ($listIdentifier == '') {
@@ -77,7 +79,7 @@ class Tx_PtExtlist_Domain_Configuration_ConfigurationBuilderFactory {
 		
 		if (!array_key_exists($listIdentifier,self::$instances)) {
 			
-			if(!array_key_exists($listIdentifier, self::$settings['listConfig'])) {
+			if(!is_array(self::$settings['listConfig']) || !array_key_exists($listIdentifier, self::$settings['listConfig'])) {
 				throw new Exception('No list with listIdentifier '.$listIdentifier.' could be found in settings! 1288110596');
 			}
         
