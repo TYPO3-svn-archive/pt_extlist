@@ -66,6 +66,17 @@ abstract class Tx_PtExtlist_Controller_AbstractController extends Tx_Extbase_MVC
 	protected $listIdentifier;
 	
 	
+	
+	/**
+	 * Custom template Path and Filename
+	 * Has to be set before resolveView is called!
+	 * 
+	 * @var string
+	 */
+	protected $templatePathAndFileName;
+	
+	
+	
 	/**
 	 * Constructor for all plugin controllers
 	 */
@@ -98,6 +109,17 @@ abstract class Tx_PtExtlist_Controller_AbstractController extends Tx_Extbase_MVC
 	}
     
 	
+	
+	/**
+	 * @param Tx_Extbase_MVC_View_ViewInterface $view
+	 * @return void
+	 */
+	protected function setViewConfiguration(Tx_Extbase_MVC_View_ViewInterface $view) {
+		parent::setViewConfiguration($view);
+		$this->setCustomPathsInView($view);  
+	}
+	
+	
     
     /**
      * Resolve the viewObjectname in the following order
@@ -113,7 +135,7 @@ abstract class Tx_PtExtlist_Controller_AbstractController extends Tx_Extbase_MVC
    	
     	$viewClassName = $this->resolveTsDefinedViewClassName();
     	if($viewClassName) {
-			return $viewClassName;
+    		return $viewClassName;
 		} 
 		
 		$viewClassName = parent::resolveViewObjectName();
@@ -169,16 +191,28 @@ abstract class Tx_PtExtlist_Controller_AbstractController extends Tx_Extbase_MVC
 	 */
 	protected function initializeView(Tx_Extbase_MVC_View_ViewInterface $view) {
         $this->objectManager->get('Tx_PtExtlist_Extbase_ExtbaseContext')->setControllerContext($this->controllerContext);
-		
-        if (method_exists($view, 'injectConfigurationBuilder')) {
+        if (method_exists($view, 'setConfigurationBuilder')) {
             $view->setConfigurationBuilder($this->configurationBuilder);
         }
-  		
-        $this->setCustomPathsInView($view);  
-        
+  	        
         $this->view->assign('config', $this->configurationBuilder);
 	}
 
+	
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see Classes/MVC/Controller/Tx_Extbase_MVC_Controller_ActionController::processRequest()
+	 */
+	public function processRequest(Tx_Extbase_MVC_RequestInterface $request, Tx_Extbase_MVC_ResponseInterface $response) {
+		parent::processRequest($request, $response);
+		
+		if(TYPO3_MODE === 'BE') {
+			// if we are in BE mode, this ist the last line called
+			Tx_PtExtlist_Domain_Lifecycle_LifecycleManagerFactory::getInstance()->updateState(Tx_PtExtlist_Domain_Lifecycle_LifecycleManager::END);
+		}
+	}
+	
 	
 	
 	/**
@@ -190,7 +224,13 @@ abstract class Tx_PtExtlist_Controller_AbstractController extends Tx_Extbase_MVC
 	protected function setCustomPathsInView(Tx_Extbase_MVC_View_ViewInterface $view) {
 		
 		$templatePathAndFilename = $this->settings['listConfig'][$this->listIdentifier]['controller'][$this->request->getControllerName()][$this->request->getControllerActionName()]['template'];
+		
+		if(!$templatePathAndFilename) {
+			$templatePathAndFilename = $this->templatePathAndFileName;
+		}
+		
 		if (isset($templatePathAndFilename) && strlen($templatePathAndFilename) > 0) {
+			
 			if (file_exists(t3lib_div::getFileAbsFileName($templatePathAndFilename))) { 
                 $view->setTemplatePathAndFilename(t3lib_div::getFileAbsFileName($templatePathAndFilename));
 			} else {
