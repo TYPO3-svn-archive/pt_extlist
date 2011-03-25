@@ -32,13 +32,16 @@
  * @package Domain
  * @subpackage StateAdapter
  * @author Michael Knoll 
+ * @author Daniel Lienert
  */
 class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManagerFactory {
+	
+
 	
 	/**
 	 * Singleton instance of session persistence manager object
 	 *
-	 * @var Tx_PtExtlist_Domain_SessionPersistence_SessionPersistenceManager
+	 * @var Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager
 	 */
 	private static $instance;
 	
@@ -49,10 +52,11 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManagerFactory {
 	 * 
 	 * @return Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager Singleton instance of session persistence manager 
 	 */
-	public static function getInstance() {
+	public static function getInstance($sessionStorageMode) {
 		if (self::$instance == NULL) {
 			self::$instance = new Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager();
-			self::$instance->injectSessionAdapter(self::getStorageAdapter());
+			self::$instance->injectSessionAdapter(self::getStorageAdapter($sessionStorageMode));
+			self::$instance->setSessionStorageMode($sessionStorageMode);
 		}
 		return self::$instance;
 	}
@@ -64,12 +68,20 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManagerFactory {
 	 *
 	 * @return tx_pttools_iStorageAdapter storageAdapter
 	 */
-	private static function getStorageAdapter() {
+	private static function getStorageAdapter($storageMode) {
 		
-		if(t3lib_div::makeInstance('Tx_Extbase_Object_ObjectManager')->get('Tx_PtExtlist_Extbase_ExtbaseContext')->isInCachedMode()) {
-			return Tx_PtExtlist_Domain_StateAdapter_Storage_DBStorageAdapterFactory::getInstance();	
-		} else {
-			return tx_pttools_sessionStorageAdapter::getInstance();	
+		switch($storageMode) {
+			case Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager::STORAGE_ADAPTER_SESSION:
+				return tx_pttools_sessionStorageAdapter::getInstance();
+				break;
+			case Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager::STORAGE_ADAPTER_DB:
+				return Tx_PtExtlist_Domain_StateAdapter_Storage_DBStorageAdapterFactory::getInstance();
+				break;
+			case Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager::STORAGE_ADAPTER_NULL:
+				return new Tx_PtExtlist_Domain_StateAdapter_Storage_NullStorageAdapter();	
+				break;
+			default:
+				return tx_pttools_sessionStorageAdapter::getInstance();
 		}
 	}
 }

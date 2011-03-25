@@ -1,7 +1,7 @@
 {namespace extlist=Tx_PtExtlist_ViewHelpers}
 <extlist:comment>
-<!--  
-Partial for rendering a min filter
+<!--
+Partial for rendering a date range filter
 
 Here is a list of objects / variables that can be accessed in this partial
 
@@ -19,14 +19,14 @@ Here is a list of objects / variables that can be accessed in this partial
 		</div>
 	</f:if>
 	
-	<label for="{filter.filterIdentifier}">
+	<label for="{filter.filterIdentifier}" class="filter-label">
 		{filter.label}
 	</label>
 	<div class="outer-field-wrapper">
 		<div class="field-wrapper type-text">
-			<label for="{extlist:namespace.FormElementName(object:'{filter}' property:'filterValueFrom')}">From:</label> <br />
-			<f:form.textbox property="filterValueFrom" value="{filter.filterValueFrom}" name="{extlist:namespace.FormElementName(object:'{filter}' property:'filterValueFrom')}" /><br/>
-			<label for="{extlist:namespace.FormElementName(object:'{filter}' property:'filterValueTo')}">To:</label><br />
+			<label for="{extlist:namespace.FormElementName(object:'{filter}' property:'filterValueFrom')}"><f:translate key="filter.daterange.from" />:</label> <br />
+			<f:form.textbox property="filterValueFrom" value="{filter.filterValueFrom}" name="{extlist:namespace.FormElementName(object:'{filter}' property:'filterValueFrom')}" /><br />
+			<label for="{extlist:namespace.FormElementName(object:'{filter}' property:'filterValueTo')}"><f:translate key="filter.daterange.to" />:</label><br />
 			<f:form.textbox property="filterValueTo" value="{filter.filterValueTo}" name="{extlist:namespace.FormElementName(object:'{filter}' property:'filterValueTo')}" />
 		</div>
 	</div>

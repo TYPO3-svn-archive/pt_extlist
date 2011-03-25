@@ -39,9 +39,15 @@ class Tx_PtExtlist_Extbase_ExtbaseContext implements t3lib_Singleton {
 	
 	
 	/**
-	 * @var bool;
+	 * @var bool isInCachedMode
 	 */
-	protected $inCachedMode;
+	protected $isInCachedMode = false;
+	
+	
+	/**
+	 * @var string;
+	 */
+	protected $sessionStorageMode;
 	
 	
 	/**
@@ -71,9 +77,6 @@ class Tx_PtExtlist_Extbase_ExtbaseContext implements t3lib_Singleton {
 	protected $configurationManager;
 	
 	
-	
-	
-	
 	/**
 	 * Initialize the object (called by objectManager)
 	 * 
@@ -85,7 +88,14 @@ class Tx_PtExtlist_Extbase_ExtbaseContext implements t3lib_Singleton {
 		$this->extensionNameSpace = Tx_Extbase_Utility_Extension::getPluginNamespace($frameWorkKonfiguration['extensionName'], 
 																						$frameWorkKonfiguration['pluginName']); 
 		
-		$this->inCachedMode = $frameWorkKonfiguration['pluginName'] == 'Cached' ? true : false;
+		$this->sessionStorageMode = $frameWorkKonfiguration['pluginName'] == 'Cached' 
+					? Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager::STORAGE_ADAPTER_DB 
+					: Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager::STORAGE_ADAPTER_SESSION;
+		
+		$this->isInCachedMode = $frameWorkKonfiguration['pluginName'] == 'Cached' ? true : false;
+					
+		$this->useStateCache = true; // TODO make this configurable
+		
 		$this->currentListIdentifier = $frameWorkKonfiguration['settings']['listIdentifier'];
 		
 		unset($frameWorkKonfiguration);
@@ -124,10 +134,48 @@ class Tx_PtExtlist_Extbase_ExtbaseContext implements t3lib_Singleton {
 	
 	
 	/**
+	 * @return string constant
+	 */
+	public function getSessionStorageMode() {
+		return $this->sessionStorageMode;
+	}
+	
+	
+	/**
 	 * @return bool
 	 */
 	public function isInCachedMode() {
-		return $this->inCachedMode;
+		return $this->isInCachedMode;
+	}
+	
+	
+	
+	/**
+	 * @param bool $isInCachedMode
+	 */
+	public function setInCachedMode($isInCachedMode) {
+		$this->isInCachedMode = $isInCachedMode;
+	}
+	
+	
+	
+	/**
+	 * Set the cached mode for the complete extension.
+	 * This is autmatically set when extlsit is used as standalone extension
+	 * 
+	 * @param string $sessionStorageMode
+	 */
+	public function setSessionStorageMode($sessionStorageMode) {
+		$this->sessionStorageMode = $sessionStorageMode;
+	}
+	
+	
+	
+	/**
+	 * @return bool
+	 */
+	public function useStateCache() {
+		return $this->useStateCache;
 	}
 	
 	

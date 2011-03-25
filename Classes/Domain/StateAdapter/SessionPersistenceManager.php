@@ -37,6 +37,22 @@
  */
 class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_PtExtlist_Domain_Lifecycle_LifecycleEventInterface {
 	
+	
+	/**
+	 * Definition of SessionStorageAdapter
+	 */
+	const STORAGE_ADAPTER_DB 		= 'Tx_PtExtlist_Domain_StateAdapter_Storage_DBStorageAdapter';
+	const STORAGE_ADAPTER_SESSION 	= 'tx_pttools_sessionStorageAdapter';
+	const STORAGE_ADAPTER_NULL 		= 'Tx_PtExtlist_Domain_StateAdapter_Storage_NullStorageAdapter';
+	
+	
+	/**
+	 * @var int internal session state
+	 */
+	private $internalSessionState = Tx_PtExtlist_Domain_Lifecycle_LifecycleManager::UNDEFINED;
+	
+	
+	
 	/**
 	 * Holds an instance for a session adapter to store data to session
 	 * 
@@ -63,13 +79,20 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_P
 	protected $sessionHash = NULL;
 	
 	
-	
 	/**
 	 * Holds an array of objects that should be persisted when lifecycle ends
 	 *
 	 * @var array<Tx_PtExtlist_Domain_StateAdapter_SessionPersistableInterface>
 	 */
 	protected $objectsToPersist = array();
+	
+	
+	
+	/**
+	 * Identifies the session storage mode
+	 * @var string
+	 */
+	protected $sessionStorageMode;
 	
 	
 	
@@ -85,6 +108,17 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_P
 	
 	
 	/**
+	 * Set the session storage mode
+	 * 
+	 * @param string $sessionStorageMode
+	 */
+	public function setSessionStorageMode($sessionStorageMode) {
+		$this->sessionStorageMode = $sessionStorageMode;
+	}
+	
+	
+	
+	/**
 	 * Persists a given object to session
 	 *
 	 * @param Tx_PtExtlist_Domain_SessionPersistence_SessionPersistableInterface $object
@@ -92,22 +126,21 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_P
 	public function persistToSession(Tx_PtExtlist_Domain_StateAdapter_SessionPersistableInterface $object) {
 		$sessionNamespace = $object->getObjectNamespace();
 		
-		if($this->sessionHash != NULL &&  $this->sessionHash != md5(serialize($this->sessionData))) {
+		if($this->sessionStorageMode == self::STORAGE_ADAPTER_DB 
+			&& $this->sessionHash != NULL &&  $this->sessionHash != md5(serialize($this->sessionData))) {
 			throw new Exception('Session Hash already calculated and current sessiondata changed!! 1293004344'. $sessionNamespace . ': Calc:' . $this->sessionHash . ' NEW: ' . md5(serialize($this->sessionData)));
 		}
 		
 		tx_pttools_assert::isNotEmptyString($sessionNamespace, array('message' => 'Object namespace must not be empty! 1278436822'));
 		$objectData = $object->persistToSession();
 	    
-		if ($objectData == null) {
-            $objectData = array();
-        }
-        
         if ($this->sessionData == null) {
         	$this->sessionData = array();
         }
         
-        $this->sessionData = Tx_PtExtlist_Utility_NameSpace::saveDataInNamespaceTree($sessionNamespace, $this->sessionData, $objectData);
+        if ($objectData != null && count(array_filter($objectData))) {
+			$this->sessionData = Tx_PtExtlist_Utility_NameSpace::saveDataInNamespaceTree($sessionNamespace, $this->sessionData, $objectData);
+        }
 	}
 
 	
@@ -155,6 +188,8 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_P
 	 */
 	public function read() {
 		$this->sessionData = $this->sessionAdapter->read('pt_extlist.cached.session');
+		
+		if(!is_array($this->sessionData)) $this->sessionData = array();
 	}
 	
 	
@@ -165,6 +200,10 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_P
 	 * @param int $state
 	 */
 	public function lifecycleUpdate($state) {
+		
+		if($state <= $this->internalSessionState) return;
+		$this->internalSessionState = $state;
+		
 		switch($state) {
 			case Tx_PtExtlist_Domain_Lifecycle_LifecycleManager::START:
 				$this->read();
@@ -226,11 +265,28 @@ class Tx_PtExtlist_Domain_StateAdapter_SessionPersistenceManager implements Tx_P
 	 */
 	public function getSessionDataHash() {
 		if($this->sessionHash == NULL) {
+			$this->lifecycleUpdate(Tx_PtExtlist_Domain_Lifecycle_LifecycleManager::END);
 			$this->sessionHash = md5(serialize($this->sessionData));
 		}
 		return $this->sessionHash;
 	}
 	
+	
+	
+	/**
+	 * Add arguments to url if the session is not usable
+	 * 
+	 * @param array $argumentArray
+	 */
+	public function addSessionRelatedArguments(&$argumentArray) {
+		if(!is_array($argumentArray)) $argumentArray = array();
+		
+		if($this->sessionStorageMode == self::STORAGE_ADAPTER_DB) {
+			$argumentArray['state'] = $this->getSessionDataHash(); 
+		} elseif($this->sessionStorageMode == self::STORAGE_ADAPTER_NULL) {
+			$argumentArray = t3lib_div::array_merge_recursive_overrule($this->sessionData, $argumentArray);
+		}
+	}	
 	
 	
     /**
